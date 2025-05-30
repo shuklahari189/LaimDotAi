@@ -30,5 +30,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: ./lib/assets/Roboto-Italic-VariableFont_wdth,wght.ttf
+        - asset: ./lib/assets/Roboto-VariableFont_wdth,wght.ttf
   assets:
     - .env
+    - ./lib/assets/
