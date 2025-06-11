@@ -17,14 +17,15 @@ const UserSchema = CollectionSchema(
   name: r'User',
   id: -7838171048429979076,
   properties: {
-    r'name': PropertySchema(id: 0, name: r'name', type: IsarType.string),
+    r'colorId': PropertySchema(id: 0, name: r'colorId', type: IsarType.long),
+    r'name': PropertySchema(id: 1, name: r'name', type: IsarType.string),
     r'parentName': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'parentName',
       type: IsarType.string,
     ),
     r'refreshToken': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'refreshToken',
       type: IsarType.string,
     ),
@@ -76,9 +77,10 @@ void _userSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.name);
-  writer.writeString(offsets[1], object.parentName);
-  writer.writeString(offsets[2], object.refreshToken);
+  writer.writeLong(offsets[0], object.colorId);
+  writer.writeString(offsets[1], object.name);
+  writer.writeString(offsets[2], object.parentName);
+  writer.writeString(offsets[3], object.refreshToken);
 }
 
 User _userDeserialize(
@@ -88,9 +90,10 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    reader.readStringOrNull(offsets[0]),
-    reader.readStringOrNull(offsets[2]),
     reader.readStringOrNull(offsets[1]),
+    reader.readStringOrNull(offsets[3]),
+    reader.readLong(offsets[0]),
+    reader.readStringOrNull(offsets[2]),
   );
   object.id = id;
   return object;
@@ -104,10 +107,12 @@ P _userDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -205,6 +210,63 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> colorIdEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'colorId', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> colorIdGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'colorId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> colorIdLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'colorId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> colorIdBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'colorId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -754,6 +816,18 @@ extension UserQueryObject on QueryBuilder<User, User, QFilterCondition> {}
 extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {}
 
 extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
+  QueryBuilder<User, User, QAfterSortBy> sortByColorId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByColorIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorId', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -792,6 +866,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
 }
 
 extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
+  QueryBuilder<User, User, QAfterSortBy> thenByColorId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByColorIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorId', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -842,6 +928,12 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
 }
 
 extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
+  QueryBuilder<User, User, QDistinct> distinctByColorId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'colorId');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByName({
     bool caseSensitive = true,
   }) {
@@ -871,6 +963,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<User, int, QQueryOperations> colorIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'colorId');
     });
   }
 

@@ -1,36 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'dart:io';
-
-// ********************
-// final authCode = await Clipboard.getData("text/plain");
-//             if (authCode?.text?.split(" ")[0] != "code") {
-// ********************
-// hitting google api
-// final refTokenPostResponse = await http.post(
-//   Uri.parse('https://oauth2.googleapis.com/token'),
-//   body: {
-//     "code": 1,
-//     "client_id": dotenv.env["GOOGLE_CLIENT_ID"],
-//     "client_secret": dotenv.env["GOOGLE_CLIENT_SECRET"],
-//     "redirect_uri": dotenv.env["GOOLGE_REDIRECT_URI"],
-//     "grant_type": "authorization_code",
-//   },
-// );
-// final Map<String, dynamic> refTokenData = jsonDecode(refTokenPostResponse.body);
-// ********************
-// hitting backend
-// final addingUserToBackendPostResponse = await http.post(
-//                 Uri.parse('${dotenv.env["BACKEND_API"]}/device/addDevice'),
-//                 headers: {"Content-Type": "application/json"},
-//                 body: jsonEncode({
-//                   "userName": nameInputController.text,
-//                   "emailId": mailId,
-//                 }),
-//               );
-//               final Map<String, dynamic> addinUserToBacendResponseData =
-//                   jsonDecode(addingUserToBackendPostResponse.body);
-// *******************
+import 'package:laim_ai/components/body.dart';
+import 'package:laim_ai/components/settings.dart';
 
 class Home extends StatefulWidget {
   final Isar isar;
@@ -42,6 +14,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool showSettings = false;
+
+  void setShowSettings(bool state) {
+    setState(() {
+      showSettings = state;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,30 +48,42 @@ class _HomeState extends State<Home> {
       ),
     );
 
+    // Body
+    stackedConents.add(
+      Body(isar: widget.isar, setShowSettings: setShowSettings),
+    );
+
     // Settings
+    double settingsWidth = 300;
     if (showSettings) {
       stackedConents.add(
-        Container(
-          width: double.infinity,
-          height: double.infinity,
-          alignment: Alignment(1, 0),
+        Material(
+          color: Colors.transparent,
           child: Container(
-            alignment: Alignment(-1, 0),
-            width: 300,
+            width: double.infinity,
             height: double.infinity,
-            color: Colors.blue,
+            alignment: Alignment(1, 0),
+            child: Container(
+              alignment: Alignment(-1, 0),
+              width:
+                  (Platform.isAndroid || Platform.isIOS)
+                      ? double.infinity
+                      : settingsWidth,
+              height: double.infinity,
+              child: Settings(
+                setShowSettings: setShowSettings,
+                isar: widget.isar,
+              ),
+            ),
           ),
         ),
       );
     }
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(children: [...stackedConents]),
-        ),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(children: [...stackedConents]),
       ),
     );
   }

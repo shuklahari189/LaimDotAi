@@ -7,5 +7,6 @@ class User {
   String? name;
   String? refreshToken;
   String? parentName;
-  User(this.name, this.refreshToken, this.parentName);
+  int colorId;
+  User(this.name, this.refreshToken, this.colorId, this.parentName);
 }

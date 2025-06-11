@@ -21,16 +21,6 @@ void main() async {
     name: dbName,
   );
 
-  // await isar.close();
-  // final files = ["$dbName.isar", "$dbName.isar-lck"];
-  // for (var file in files) {
-  //   final filePath = File("${directory.path}/$file");
-  //   if (await filePath.exists()) {
-  //     await filePath.delete();
-  //     print("Deleted: ${filePath.path}");
-  //   }
-  // }
-
   runApp(MainApp(isar: isar));
 }
 
@@ -47,7 +37,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: Routes.addUser,
+      initialRoute: Routes.login,
       routes: {
         Routes.home: (context) => Home(isar: widget.isar),
         Routes.login: (context) => Login(isar: widget.isar, addingUser: false),

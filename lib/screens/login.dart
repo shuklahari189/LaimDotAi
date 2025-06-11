@@ -19,52 +19,85 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  bool loading = false;
+
+  void showLoader() {
+    setState(() {
+      loading = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius:
-                (Platform.isAndroid || Platform.isIOS)
-                    ? BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                      bottomLeft: Radius.circular(40),
-                      bottomRight: Radius.circular(40),
-                    )
-                    : BorderRadius.all(Radius.zero),
+    List<Widget> loaderAndOther = List.empty(growable: true);
+    if (loading) {
+      loaderAndOther.add(
+        Scaffold(
+          backgroundColor: Colors.black45,
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            alignment: Alignment(0, 0),
+            child: CircularProgressIndicator(),
           ),
-          alignment: Alignment(0, 0),
-          child:
-              (Platform.isAndroid || Platform.isIOS)
-                  ?
-                  // Smartphone ui
-                  LoginContent(isar: widget.isar, addingUser: widget.addingUser)
-                  :
-                  // Desktop ui
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: LoginContent(
-                      isar: widget.isar,
-                      addingUser: widget.addingUser,
-                    ),
-                  ),
         ),
+      );
+    }
+
+    return SafeArea(
+      child: Stack(
+        children: [
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    (Platform.isAndroid || Platform.isIOS)
+                        ? BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                          bottomLeft: Radius.circular(40),
+                          bottomRight: Radius.circular(40),
+                        )
+                        : BorderRadius.all(Radius.zero),
+              ),
+              alignment: Alignment(0, 0),
+              child:
+                  (Platform.isAndroid || Platform.isIOS)
+                      ?
+                      // Smartphone ui
+                      LoginContent(
+                        isar: widget.isar,
+                        addingUser: widget.addingUser,
+                        showLoader: showLoader,
+                      )
+                      :
+                      // Desktop ui
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: LoginContent(
+                          isar: widget.isar,
+                          addingUser: widget.addingUser,
+                          showLoader: showLoader,
+                        ),
+                      ),
+            ),
+          ),
+          ...loaderAndOther,
+        ],
       ),
     );
   }
@@ -73,7 +106,13 @@ class _LoginState extends State<Login> {
 class LoginContent extends StatefulWidget {
   final Isar isar;
   final bool addingUser;
-  const LoginContent({super.key, required this.isar, required this.addingUser});
+  final Function showLoader;
+  const LoginContent({
+    super.key,
+    required this.isar,
+    required this.addingUser,
+    required this.showLoader,
+  });
 
   @override
   State<LoginContent> createState() => _LoginContentState();
@@ -208,7 +247,10 @@ class _LoginContentState extends State<LoginContent> {
         MouseRegion(
           child: GestureDetector(
             onTap: () async {
-              if (canPressEnter && nameInputController.text.isNotEmpty) {
+              if (canPressEnter &&
+                  nameInputController.text.isNotEmpty &&
+                  nameInputController.text != "main") {
+                widget.showLoader();
                 setState(() {
                   canPressEnter = false;
                 });
@@ -269,16 +311,40 @@ class _LoginContentState extends State<LoginContent> {
                     jsonDecode(addingUserToBackendPostResponse.body);
 
                 // adding user to db
-                User user = User(
-                  addinUserToBacendResponseData["userName"],
-                  refreshToken,
-                  "",
-                );
-                widget.isar.writeTxn(() => widget.isar.users.put(user));
+                if (widget.addingUser) {
+                  User? mainUser =
+                      await widget.isar.users
+                          .filter()
+                          .parentNameEqualTo("main")
+                          .findFirst();
+                  User? userWithLastColorId =
+                      await widget.isar.users
+                          .where()
+                          .sortByColorIdDesc()
+                          .limit(1)
+                          .findFirst();
+
+                  User user = User(
+                    addinUserToBacendResponseData["userName"],
+                    refreshToken,
+                    (userWithLastColorId!.colorId + 1),
+                    mainUser!.name,
+                  );
+
+                  widget.isar.writeTxn(() => widget.isar.users.put(user));
+                } else {
+                  User user = User(
+                    addinUserToBacendResponseData["userName"],
+                    refreshToken,
+                    0,
+                    "main",
+                  );
+                  widget.isar.writeTxn(() => widget.isar.users.put(user));
+                }
 
                 setState(() {});
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.pushReplacementNamed(context, Routes.home);
+                  Navigator.popAndPushNamed(context, Routes.home);
                 });
               }
             },
